@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
+
 export default function PlaylistScreen() {
   return (
     <View style={styles.container}>
@@ -18,7 +19,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    color: '#fff',
+    color: '#8e24aa', // morado
     fontSize: 28,
     fontWeight: '700',
     letterSpacing: 0.5,

@@ -11,6 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { register } from '../services/auth';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
@@ -25,17 +26,12 @@ const RegisterScreen = () => {
   const handleRegister = async (values) => {
     setLoading(true);
     try {
-      // Aquí deberías llamar a tu API de registro
-      // Ejemplo:
-      // await api.register(values);
-      // navigation.navigate('Login');
-      setTimeout(() => {
-        setLoading(false);
-        Alert.alert('Éxito', 'Registro exitoso');
-        navigation.navigate('Login');
-      }, 1200);
+      await register(values.username, values.email, values.password);
+      Alert.alert('Éxito', 'Registro exitoso');
+      navigation.navigate('Login');
     } catch (error) {
       Alert.alert('Error', 'No se pudo registrar. Inténtalo de nuevo');
+    } finally {
       setLoading(false);
     }
   };
@@ -137,7 +133,7 @@ const styles = StyleSheet.create({
     color: '#fff'
   },
   button: {
-    backgroundColor: '#1db954',
+    backgroundColor: '#8e24aa', // morado
     padding: 14,
     borderRadius: 12,
     alignItems: 'center',
@@ -152,7 +148,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#444'
   },
   link: {
-    color: '#1db954',
+    color: '#8e24aa', // morado
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '500'

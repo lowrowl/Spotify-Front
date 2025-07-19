@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
+
 export default function ProfileScreen() {
   const navigation = useNavigation();
 
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    color: '#fff',
+    color: '#8e24aa', // morado
     fontSize: 28,
     fontWeight: '700',
     letterSpacing: 0.5,

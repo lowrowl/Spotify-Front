@@ -12,14 +12,26 @@ export default function TabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#1db954',
+        tabBarActiveTintColor: '#8e24aa', // morado
         tabBarInactiveTintColor: '#fff',
         tabBarStyle: {
-          backgroundColor: '#181818',
-          borderTopColor: '#232526',
-          height: 60,
-          paddingBottom: 6,
-          paddingTop: 6,
+          position: 'absolute',
+          left: 24,
+          right: 24,
+          bottom: 18,
+          height: 64,
+          borderRadius: 24,
+          backgroundColor: 'rgba(35,37,38,0.85)',
+          borderTopWidth: 0,
+          shadowColor: '#8e24aa',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.18,
+          shadowRadius: 16,
+          elevation: 16,
+          paddingBottom: 8,
+          paddingTop: 8,
+          // Efecto "flotante" y difuminado leve
+          // Si quieres blur real, se puede usar expo-blur con tabBarBackground
         },
         tabBarShowLabel: false,
         tabBarLabelStyle: {

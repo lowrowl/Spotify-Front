@@ -11,6 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { login } from '../services/auth';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -24,19 +25,11 @@ const LoginScreen = () => {
   const handleLogin = async (values) => {
     setLoading(true);
     try {
-      // Aquí deberías llamar a tu API de login
-      // Ejemplo:
-      // const res = await api.login(values);
-      // const { token, user } = res.data;
-      // await AsyncStorage.setItem('token', token);
-      // await AsyncStorage.setItem('user', JSON.stringify(user));
-      // navigation.replace('Home');
-      setTimeout(() => {
-        setLoading(false);
-        navigation.replace('Home'); // Cambia 'Home' por tu pantalla principal
-      }, 1200);
+      await login(values.email, values.password);
+      navigation.replace('Tabs'); // o 'Home', según tu estructura
     } catch (error) {
       Alert.alert('Error', 'Email o contraseña incorrectos');
+    } finally {
       setLoading(false);
     }
   };
@@ -129,7 +122,7 @@ const styles = StyleSheet.create({
     color: '#fff'
   },
   button: {
-    backgroundColor: '#1db954',
+    backgroundColor: '#8e24aa', // morado
     padding: 14,
     borderRadius: 12,
     alignItems: 'center',
@@ -144,7 +137,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#444'
   },
   link: {
-    color: '#1db954',
+    color: '#8e24aa', // morado
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '500'
