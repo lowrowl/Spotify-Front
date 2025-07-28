@@ -1,93 +1,104 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Animated, Keyboard, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  FlatList,
+  Image,
+  ActivityIndicator,
+  useWindowDimensions,
+  ScrollView
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { searchTracks } from '../services/music';
 
 export default function SearchScreen() {
   const navigation = useNavigation();
+  const { width } = useWindowDimensions();
   const [search, setSearch] = useState('');
   const [focused, setFocused] = useState(false);
   const [results, setResults] = useState([]);
-  const inputAnim = useRef(new Animated.Value(0)).current;
-
-  const handleFocus = () => {
-    setFocused(true);
-    Animated.timing(inputAnim, {
-      toValue: -290,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handleBlur = () => {
-    if (!search) {
-      setFocused(false);
-      Animated.timing(inputAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    }
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (text) => {
     setSearch(text);
-    if (text.length > 0) {
-      setResults([
-        `Resultado para "${text}" 1`,
-        `Resultado para "${text}" 2`,
-        `Resultado para "${text}" 3`,
-      ]);
-    } else {
-      setResults([]);
+  };
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (search.trim()) {
+        searchMusic();
+      } else {
+        setResults([]);
+      }
+    }, 400);
+    return () => clearTimeout(delayDebounce);
+  }, [search]);
+
+  const searchMusic = async () => {
+    if (!search.trim()) return;
+    try {
+      setLoading(true);
+      const tracks = await searchTracks(search);
+      setResults(tracks || []);
+    } catch (error) {
+      console.error('Error al buscar música:', error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const inputWidth = Math.max(Math.min(width * 0.8, 480), 260);
+  const imageSize = 48;
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={styles.backIcon}
-      >
-        <Ionicons name="arrow-back" size={28} color="#8e24aa" />
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backIcon}>
+        <Ionicons name="arrow-back" size={28} color="#fff" />
       </TouchableOpacity>
-      <Animated.View style={[styles.animatedInput, { transform: [{ translateY: inputAnim }] }]}> 
-        <LinearGradient
-          colors={["#8e24aa", "#232526", "#181818"]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.gradientInput}
-        >
-          <View style={styles.blurWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Buscar..."
-              placeholderTextColor="#aaa"
-              value={search}
-              onChangeText={handleChange}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              returnKeyType="search"
-            />
-          </View>
-        </LinearGradient>
-        {(focused || search.length > 0) && (
-          <View style={styles.resultsWrapper}>
-            <FlatList
-              data={results}
-              keyExtractor={(item, idx) => idx.toString()}
-              renderItem={({ item }) => (
-                <View style={styles.resultItem}>
-                  <Text style={styles.resultText}>{item}</Text>
-                </View>
-              )}
-              style={styles.resultsList}
-              keyboardShouldPersistTaps="handled"
-            />
-          </View>
-        )}
-      </Animated.View>
+
+      <View style={[styles.searchBarWrapper, { width: inputWidth }]}>
+        <TextInput
+          style={styles.input}
+          placeholder="Buscar..."
+          placeholderTextColor="#ccc"
+          value={search}
+          onChangeText={handleChange}
+          returnKeyType="search"
+        />
+      </View>
+
+      <View style={{ height: 24 }} />
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#fff" style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          data={results}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('SongDetail', { songId: item.id })}
+              style={styles.resultItem}
+            >
+              <Image
+                source={{ uri: item.album?.cover_medium || 'https://via.placeholder.com/100' }}
+                style={[styles.image, { width: imageSize, height: imageSize }]}
+              />
+              <View style={styles.resultInfo}>
+                <Text style={styles.resultText} numberOfLines={1}>{item.title}</Text>
+                <Text style={styles.artist} numberOfLines={1}>{item.artist?.name}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          contentContainerStyle={styles.resultsContainer}
+          horizontal={false}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </View>
   );
 }
@@ -95,83 +106,85 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#181818',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    paddingTop: 60,
+    backgroundColor: '#1a0930',
+    paddingHorizontal: 0,
   },
   backIcon: {
     position: 'absolute',
-    top: 24,
-    left: 18,
+    top: 20,
+    left: 16,
     zIndex: 10,
-    backgroundColor: 'transparent',
-    padding: 4,
+    padding: 8,
+    backgroundColor: 'rgba(33,0,58,0.92)',
     borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  animatedInput: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: '40%',
-    zIndex: 2,
-  },
-  gradientInput: {
-    width: '80%',
-    borderRadius: 18,
-    marginBottom: 8,
-    padding: 2,
-    shadowColor: '#8e24aa',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 12,
-    // Para Android
-    backgroundColor: 'rgba(142,36,170,0.15)',
-  },
-  blurWrapper: {
+  searchBarWrapper: {
+    marginBottom: 24,
+    backgroundColor: 'rgba(33,0,58,0.92)',
     borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(35,37,38,0.55)',
-    // Efecto de "vidrio esmerilado" simulado
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-    // backdropFilter solo para web, ignorado en mobile
-    // Para mobile, el color de fondo y opacidad simulan el blur
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
   input: {
+    color: '#fff',
+    fontSize: 16,
+    padding: 10,
     width: '100%',
     backgroundColor: 'transparent',
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 18,
-    color: '#fff',
-    borderWidth: 0,
-    textAlign: 'center',
+    borderRadius: 8,
   },
-  resultsWrapper: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    marginTop: 4,
-    maxHeight: 250,
-  },
-  resultsList: {
-    width: '90%',
-    maxHeight: 250,
+  resultsContainer: {
+    paddingBottom: 30,
+    paddingLeft: 16,
+    paddingRight: 16,
+    minHeight: 120,
   },
   resultItem: {
-    backgroundColor: '#232526',
-    marginHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(33,0,58,0.92)',
+    borderRadius: 16,
+    padding: 16,
     marginVertical: 6,
-    borderRadius: 8,
-    padding: 14,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
+    minHeight: 80,
+  },
+  resultInfo: {
+    flex: 1,
+    justifyContent: 'center',
+    marginLeft: 16,
+    width: '100%',
   },
   resultText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold'
   },
+  artist: {
+    color: '#ccc',
+    fontSize: 14
+  },
+  image: {
+    borderRadius: 12,
+    backgroundColor: '#333',
+    width: 64,
+    height: 64,
+    marginBottom: 0,
+  }
 });

@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { login } from '../services/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -25,10 +26,12 @@ const LoginScreen = () => {
   const handleLogin = async (values) => {
     setLoading(true);
     try {
-      await login(values.email, values.password);
-      navigation.replace('Tabs'); // o 'Home', según tu estructura
+      const { token, user } = await login({ email: values.email, password: values.password });
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+      navigation.replace('Tabs');
     } catch (error) {
-      Alert.alert('Error', 'Email o contraseña incorrectos');
+      Alert.alert('Error', 'Usuario o contraseña incorrectos');
     } finally {
       setLoading(false);
     }
@@ -46,12 +49,12 @@ const LoginScreen = () => {
             <Text style={styles.title}>Iniciar sesión</Text>
 
             <TextInput
-              placeholder="Correo electrónico"
+              placeholder="Email"
               placeholderTextColor="#999"
               style={styles.input}
-              keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              keyboardType="email-address"
               onChangeText={handleChange('email')}
               onBlur={handleBlur('email')}
               value={values.email}
