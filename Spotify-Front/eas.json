@@ -1,0 +1,22 @@
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "android": {
+        "env": {
+          "EAS_BUILD_NATIVE_STACK_JDK_VERSION": "17"
+        }
+      }
+    },
+    "production": {
+      "android": {
+        "env": {
+          "EAS_BUILD_NATIVE_STACK_JDK_VERSION": "17"
+        }
+      }
+    }
+  }
+}

@@ -20,10 +20,16 @@
         "foregroundImage": "./assets/DeezerFy.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.juanbotero.DeezerFy"
     },
     "web": {
       "favicon": "./assets/DeezerFy.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "35083a1f-ce7b-4960-8734-b60ee392e8e5"
+      }
     }
   }
 }
