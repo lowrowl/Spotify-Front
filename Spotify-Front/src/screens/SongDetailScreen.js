@@ -175,7 +175,7 @@ export default function SongDetailScreen() {
               ? { uri: song.album.cover_medium }
               : song.album?.cover_small
                 ? { uri: song.album.cover_small }
-                : require('../../assets/icon.png')
+                : require('../../assets/DeezerFy.png')
         }
         style={styles.image}
       />
